@@ -2,15 +2,16 @@ import { prismaClient } from "../application/database";
 import { ResponseError } from "../error/response-error";
 import {
   CreateUserRequest,
-  loginRequest,
+  LoginRequest,
   toUserResponse,
   UserRespone,
+  toGetUserInfo,
+  GetUserInfo,
 } from "../model/user-model";
 import { UserValidation } from "../validation/user-validation";
 import { Validation } from "../validation/validation";
 import { v4 as uuid } from "uuid";
 import bcrypt from "bcrypt";
-import { response } from "express";
 
 export class UserService {
   static async register(request: CreateUserRequest): Promise<UserRespone> {
@@ -38,7 +39,7 @@ export class UserService {
     return toUserResponse(user);
   }
 
-  static async login(request: loginRequest): Promise<UserRespone> {
+  static async login(request: LoginRequest): Promise<UserRespone> {
     const loginRequest = Validation.validate(
       UserValidation.LOGIN,
       request
@@ -71,6 +72,17 @@ export class UserService {
 
     const response = toUserResponse(user);
     response.token = user.token!;
+    return response;
+  }
+
+  static async getUserInfo(): Promise<GetUserInfo> {
+    const datas = await prismaClient.user.findFirst();
+
+    if (!datas) {
+      throw new ResponseError(400, "Data not found")
+    }
+
+    const response = toGetUserInfo(datas);
     return response;
   }
 }

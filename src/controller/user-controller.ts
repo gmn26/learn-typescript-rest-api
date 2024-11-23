@@ -26,4 +26,16 @@ export class UserController {
       next(error)
     }
   }
+
+  static async getUserInfo(req: Request, res: Response, next: NextFunction) {
+    try {
+      const request: CreateUserRequest = req.body;
+      const response = await UserService.getUserInfo();
+      res.status(200).json({
+        data: response,
+      })
+    } catch (error) {
+      next(error)
+    }
+  }
 }

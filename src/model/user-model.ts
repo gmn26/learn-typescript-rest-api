@@ -19,7 +19,23 @@ export function toUserResponse(user: User): UserRespone {
   };
 }
 
-export type loginRequest = {
+export type LoginRequest = {
   username: string
   password: string
+}
+
+export type GetUserInfo = {
+  username: string;
+  password: string;
+  name: string;
+  token: string;
+}
+
+export function toGetUserInfo(user: User): GetUserInfo {
+  return {
+    username: user.username,
+    password: user.password,
+    name: user.name,
+    token: user.token ?? "",
+  }
 }
