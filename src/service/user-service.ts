@@ -7,6 +7,7 @@ import {
   UserRespone,
   toGetUserInfo,
   GetUserInfo,
+  ChangePassword,
 } from "../model/user-model";
 import { UserValidation } from "../validation/user-validation";
 import { Validation } from "../validation/validation";
@@ -75,14 +76,63 @@ export class UserService {
     return response;
   }
 
-  static async getUserInfo(): Promise<GetUserInfo> {
-    const datas = await prismaClient.user.findFirst();
+  static async getUserInfo(token: string): Promise<GetUserInfo> {
+    const datas = await prismaClient.user.findFirst(
+      {
+        where: {
+          token: token,
+        }
+      }
+    );
 
     if (!datas) {
-      throw new ResponseError(400, "Data not found")
+      throw new ResponseError(400, "Invalid credentials")
     }
 
     const response = toGetUserInfo(datas);
+    return response;
+  }
+
+  static async changePassword(token: string, request: ChangePassword): Promise<GetUserInfo> {
+    const changePasswordRequest = Validation.validate(
+      UserValidation.CHANGEPASSWORD,
+      request
+    )
+
+    let user = await prismaClient.user.findFirst(
+      {
+        where: {
+          token: token,
+        }
+      }
+    );
+
+    if (!user) {
+      throw new ResponseError(401, "No credentials");
+    }
+
+    const samePassword = await bcrypt.compare(changePasswordRequest.password, user.password);
+
+    // todo: fix this condition
+    // this condition cause and error that could stop server and not return the ResponseError
+    if (samePassword) {
+      throw new ResponseError(400, "Cannot change with previous password");
+    }
+
+    const newHashedPassword = await bcrypt.hash(changePasswordRequest.password, 10);
+
+    user = await prismaClient.user.update(
+      {
+        where: {
+          username: user.username,
+        },
+        data: {
+          password: newHashedPassword,
+        }
+      },
+    );
+
+    const response = toGetUserInfo(user);
     return response;
   }
 }

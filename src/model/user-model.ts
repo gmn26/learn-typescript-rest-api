@@ -39,3 +39,7 @@ export function toGetUserInfo(user: User): GetUserInfo {
     token: user.token ?? "",
   }
 }
+
+export type ChangePassword = {
+  password: string;
+}

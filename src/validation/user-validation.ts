@@ -11,4 +11,8 @@ export class UserValidation {
     username: z.string().min(1).max(100),
     password: z.string().min(1).max(100),
   })
+
+  static readonly CHANGEPASSWORD: ZodType = z.object({
+    password: z.string().min(1).max(100),
+  })
 }
